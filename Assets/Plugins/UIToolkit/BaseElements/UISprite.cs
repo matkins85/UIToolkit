@@ -10,7 +10,7 @@ public class UISprite : System.Object
     public float width;  // Width and Height of the sprite in worldspace units. DO NOT SET THESE
     public float height; // THESE ARE PUBLIC TO AVOID THE GETTER OVERHEAD
 	public bool gameObjectOriginInCenter = false;  // Set to true to get your origin in the center.  Useful for scaling/rotating
-    protected GameObject client;        // Reference to the client GameObject
+    public GameObject client;        // Reference to the client GameObject
 	protected UIUVRect _uvFrame;		// UV coordinates and size for the sprite
 	
     protected Vector3[] meshVerts = new Vector3[4];        // Pointer to the array of vertices in the mesh
@@ -68,18 +68,8 @@ public class UISprite : System.Object
 		this.frame = frame;
 		
 		_uvFrame = uvFrame;
-    }
-    
-    
-    public void setClient( GameObject clientGO )
-    {
-    	client = clientGO;
-		client.transform.parent = UI.instance.transform; // Just for orginization in the hierarchy
-		client.layer = UI.instance.layer; // Set the proper layer so we only render on the UI camera
-		//client.transform.position = new Vector3( frame.x, -frame.y, depth ); // Depth will affect z-index
-
-		// Cache the clientTransform
-		clientTransform = client.transform;
+		
+		initializeBackingMesh();
     }
 
 
@@ -97,52 +87,39 @@ public class UISprite : System.Object
 		}
 	}
 
-
-    public bool hidden
-    {
-        get { return ___hidden; }
-        set
-        {
-            // No need to do anything if we're already in this state:
-            if( value == ___hidden )
-                return;
-
-            if( value )
-                manager.hideSprite( this );
-            else
-                manager.showSprite( this );
-        }
-    }
-	
 	
 	public void updateUVs()
 	{
 		var meshFilter = client.GetComponent<MeshFilter>();
 		var mesh = meshFilter.mesh;
-		var uvs = mesh.uv;
 
+		mesh.uv = getUVArray();
+	}
+
+
+	private Vector2[] getUVArray()
+	{
+		var uvs = new Vector2[4];
 		uvs[0] = this.uvFrame.lowerLeftUV + Vector2.up * this.uvFrame.uvDimensions.y;  // Upper-left
 		uvs[1] = this.uvFrame.lowerLeftUV;                              // Lower-left
 		uvs[2] = this.uvFrame.lowerLeftUV + Vector2.right * this.uvFrame.uvDimensions.x;// Lower-right
 		uvs[3] = this.uvFrame.lowerLeftUV + this.uvFrame.uvDimensions;     // Upper-right
-
-		mesh.uv = uvs;
+		return uvs;
 	}
-
-	// This gets called by the manager just after the UV's get setup
-	public void initializeSize()
+	
+	
+	// sets the sprites size and resets the verts and uvs
+	public void setSize( float width, float height )
 	{
-		setSize( width, height );
-		manager.updateUV( this );
+		this.width = width;
+		this.height = height;
+		initializeBackingMesh();
 	}
 
 	
     // Sets the physical dimensions of the sprite in the XY plane
-    public void setSize( float width, float height )
+    public void initializeBackingMesh()
     {
-        this.width = width;
-        this.height = height;
-		
 		if( gameObjectOriginInCenter )
 		{
 			// Some objects need to rotate so we set the origin at the center of the GO
@@ -164,63 +141,19 @@ public class UISprite : System.Object
 		var meshFilter = client.GetComponent<MeshFilter>();
 		var mesh = meshFilter.mesh;
 		var verts = mesh.vertices;
-		var uvs = mesh.uv;
 		
 		verts[0] = v1;
 		verts[1] = v2;
 		verts[2] = v3;
 		verts[3] = v4;
 		
-		uvs[0] = this.uvFrame.lowerLeftUV + Vector2.up * this.uvFrame.uvDimensions.y;  // Upper-left
-		uvs[1] = this.uvFrame.lowerLeftUV;                              // Lower-left
-		uvs[2] = this.uvFrame.lowerLeftUV + Vector2.right * this.uvFrame.uvDimensions.x;// Lower-right
-		uvs[3] = this.uvFrame.lowerLeftUV + this.uvFrame.uvDimensions;     // Upper-right
-		
-		//verts[0] = clientTransform.TransformPoint( v1 );
-		//verts[1] = clientTransform.TransformPoint( v2 );
-		//verts[2] = clientTransform.TransformPoint( v3 );
-		//verts[3] = clientTransform.TransformPoint( v4 );
-		
-		/*
-		Debug.Log( "--------------------" );
-		Debug.Log(v1);
-		Debug.Log(v2);
-		Debug.Log(v3);
-		Debug.Log(v4);
-		
-		foreach( var v in mesh.vertices )
-			Debug.Log( v );
-		*/
-		
 		mesh.vertices = verts;
-		mesh.uv = uvs;
-		
-		//mesh.RecalculateNormals();
-		
-		//meshFilter.sharedMesh = mesh;
+		mesh.uv = getUVArray();
+
 		mesh.RecalculateBounds();
-		
-        updateTransform();
     }
-	
 
-    // Sets the vertex and UV buffers
-    public void setBuffers( Vector3[] v, Vector2[] uv )
-    {
-        meshVerts = v;
-        UVs = uv;
-    }
-	
 
-    // Applies the transform of the client GameObject and stores the results in the associated vertices of the overall mesh
-    public virtual void updateTransform()
-    {
-
-		
-        manager.updatePositions();
-    }
-	
-	
 	// sets the sprites to have its origin at it's center and repositions it so it doesn't move from
 	// a non centered origin
 	public virtual void centerize()
@@ -235,7 +168,7 @@ public class UISprite : System.Object
 		clientTransform.position = pos;
 		
 		gameObjectOriginInCenter = true;
-		setSize( width, height );
+		initializeBackingMesh();
 	}
 	
 

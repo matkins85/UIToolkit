@@ -43,7 +43,7 @@ public class UIControlTemplate : UITouchableSprite
 		{
 			_uvFrame = value;
 			_normalUVframe = value;
-			manager.updateUV( this );
+			updateUVs();
 		}
 	}
 
@@ -63,15 +63,6 @@ public class UIControlTemplate : UITouchableSprite
 					base.uvFrame = _normalUVframe;
 			}
 		}
-	}
-
-
-	// Override transform() so we can mark the touchFrame as dirty
-	public override void updateTransform()
-	{
-		base.updateTransform();
-		
-		touchFrameIsDirty = true;
 	}
 
 

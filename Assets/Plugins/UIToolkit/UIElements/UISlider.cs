@@ -93,7 +93,6 @@ public class UISlider : UITouchableSprite
 			float newKnobPosition = Mathf.Clamp( clientTransform.position.y - normalizedKnobValue * height, _knobMinimumXY, _knobMaximumXY );
 			_sliderKnob.clientTransform.position = new Vector3( _sliderKnob.clientTransform.position.x, newKnobPosition, _sliderKnob.clientTransform.position.z );
 		}
-		_sliderKnob.updateTransform();
 	}
 
 	

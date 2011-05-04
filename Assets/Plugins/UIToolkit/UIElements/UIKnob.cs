@@ -50,7 +50,7 @@ public class UIKnob : UITouchableSprite
 		{
 			_uvFrame = value;
 			_normalUVframe = value;
-			manager.updateUV( this );
+			updateUVs();
 		}
 	}
 
@@ -86,7 +86,6 @@ public class UIKnob : UITouchableSprite
 				
 				// Update the knob rotation
 				clientTransform.rotation = Quaternion.Euler( 0, 0, -_value * 360 );
-				updateTransform();
 			}
 		}
 	}
@@ -103,7 +102,6 @@ public class UIKnob : UITouchableSprite
 		float rot = Vector3.Angle( Vector3.up, newVector ) * ( -Mathf.Sign( x ) );
 		
 		clientTransform.rotation = Quaternion.Euler( 0, 0, rot );
-		updateTransform();
 
 		_value = ( 360 - clientTransform.rotation.eulerAngles.z ) / 360;
 		

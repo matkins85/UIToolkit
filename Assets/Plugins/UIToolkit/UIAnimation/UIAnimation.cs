@@ -111,9 +111,6 @@ public class UIAnimation
 					sprite.color = currentColor;
 					break;
 			}
-			
-			// Commit the changes back to the main mesh
-			sprite.updateTransform();
 
 			// See if we are done with our animation yet
 			if( ( startTime + duration ) <= Time.time )

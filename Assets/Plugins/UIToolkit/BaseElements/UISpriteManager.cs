@@ -242,16 +242,16 @@ public class UISpriteManager : MonoBehaviour
 		}
 		
 		// did we find a sprite?  if not, expand our arrays
+        UISprite[] tempSprites = sprites;
+        sprites = new UISprite[sprites.Length + 5];
+        tempSprites.CopyTo( sprites, 0 );
+        i = tempSprites.Length;
 
         // Assign and setup the sprite
 		sprites[i] = sprite;
 		
         sprite.index = i;
         sprite.manager = this;
-
-		// Setup indices of the sprites vertices, UV entries and color values
-		//sprite.vertexIndices.initializeVertsWithIndex( i );
-		sprite.initializeSize();
     }
 
 
@@ -259,57 +259,11 @@ public class UISpriteManager : MonoBehaviour
     {
     	sprites[sprite.index] = null;
 		
-		// This should happen when the sprite dies!!
-		//Destroy( sprite.client );
+		// This should happen when the sprite dies but it doesnt!!
+		Destroy( sprite.client );
     }
 
 	#endregion;
-	
-	
-	#region Show/Hide sprite functions
 
-    public void hideSprite( UISprite sprite )
-    {
-        sprite.___hidden = true;
-    }
-
-	
-    public void showSprite( UISprite sprite )
-    {
-        if( !sprite.___hidden )
-            return;
-
-        sprite.___hidden = false;
-
-        // Update the vertices.  This will end up calling UpdatePositions() to set the vertsChanged flag
-        sprite.updateTransform();
-    }
-
-	#endregion;
-	
-
-	#region Update UV, colors and positions
-	
-    // Updates the UVs of the specified sprite and copies the new values into the mesh object.
-    public void updateUV( UISprite sprite )
-    {
-
-    }
-	
-
-    // Updates the color values of the specified sprite and copies the new values into the mesh object.
-    public void updateColors( UISprite sprite )
-    {
-
-    }
-
-	
-    // Informs the SpriteManager that some vertices have changed position and the mesh needs to be reconstructed accordingly
-    public void updatePositions()
-    {
-
-    }
-
-	#endregion;
 
 }

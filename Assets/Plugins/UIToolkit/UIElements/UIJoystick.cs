@@ -92,7 +92,6 @@ public class UIJoystick : UITouchableSprite
 		var track = UI.instance.addSprite( filename, 0, 0, 2, true );
 		track.clientTransform.parent = this.clientTransform;
 		track.clientTransform.localPosition = new Vector3( _joystickOffset.x, _joystickOffset.y, 2 );
-		track.updateTransform();
 	}
 	
 	
@@ -100,7 +99,6 @@ public class UIJoystick : UITouchableSprite
 	private void resetJoystick()
 	{
 		_joystickSprite.clientTransform.localPosition = _joystickOffset;
-		_joystickSprite.updateTransform();
 		position.x = position.y = 0.0f;
 		
 		// If we have a highlightedUVframe, swap the original back in
@@ -118,7 +116,6 @@ public class UIJoystick : UITouchableSprite
 		
 		// Set the new position and update the transform		
 		_joystickSprite.clientTransform.localPosition = newPosition;
-		_joystickSprite.updateTransform();
 		
 		// Get a value between -1 and 1 for position
 		position.x = ( newPosition.x - _joystickOffset.x ) / _maxJoystickMovement;
