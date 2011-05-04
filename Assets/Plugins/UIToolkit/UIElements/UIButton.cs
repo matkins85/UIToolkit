@@ -52,7 +52,7 @@ public class UIButton : UITouchableSprite
 		{
 			_uvFrame = value;
 			_normalUVframe = value;
-			manager.updateUV( this );
+			updateUVs();
 		}
 	}
 

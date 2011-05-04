@@ -13,12 +13,12 @@ public class UISprite : System.Object
     protected GameObject client;        // Reference to the client GameObject
 	protected UIUVRect _uvFrame;		// UV coordinates and size for the sprite
 	
-    protected Vector3[] meshVerts;        // Pointer to the array of vertices in the mesh
+    protected Vector3[] meshVerts = new Vector3[4];        // Pointer to the array of vertices in the mesh
     protected Vector2[] UVs;              // Pointer to the array of UVs in the mesh
 	protected Dictionary<string, UISpriteAnimation> spriteAnimations;
 	
     public Transform clientTransform;         // Cached Transform of the client GameObject
-    public Color _color;       // The color to be used by all four vertices
+    public Color _color = Color.white;       // The color to be used by all four vertices
 
     public int index;                     // Index of this sprite in its SpriteManager's list
 
@@ -30,6 +30,7 @@ public class UISprite : System.Object
 	// Indices of the associated vertices in the actual mesh (shortcut to get straight to the right vertices in the vertex array)
 	// Also houses indices of UVs in the mesh and color values
 	public UIVertexIndices vertexIndices;
+	public Rect frame;
 	
 	
 	public UISprite( Rect frame, int depth, UIUVRect uvFrame ):this( frame, depth, uvFrame, false )
@@ -43,19 +44,42 @@ public class UISprite : System.Object
 		this.gameObjectOriginInCenter = gameObjectOriginInCenter;
 		
 		// Setup our GO
-		client = new GameObject( "UIElement" );
-		client.transform.parent = UI.instance.transform; // Just for orginization in the hierarchy
-		client.layer = UI.instance.layer; // Set the proper layer so we only render on the UI camera
-		client.transform.position = new Vector3( frame.x, -frame.y, depth ); // Depth will affect z-index
-
-		// Cache the clientTransform
-		clientTransform = client.transform;
+        client = new GameObject( "UIElement" );
+        clientTransform = client.transform;
+        clientTransform.parent = UI.instance.transform;
+        client.layer = UI.instance.layer;
+        client.transform.position = new Vector3( frame.x, -frame.y, 5 );
+        client.AddComponent<MeshFilter>();
+        client.AddComponent<MeshRenderer>();
+        client.GetComponent<MeshRenderer>().material = UI.instance.material;
+        
+        var mesh = new Mesh();
+        client.GetComponent<MeshFilter>().mesh = mesh;
+        
+        mesh.vertices = new Vector3[4];
+        mesh.uv = new Vector2[4];
+        mesh.triangles = new int[] { 0, 1, 3, 3, 1, 2 };
+        
+        mesh.RecalculateBounds();
 		
 		// Save these for later.  The manager will call initializeSize() when the UV's get setup
 		width = frame.width;
 		height = frame.height;
+		this.frame = frame;
 		
 		_uvFrame = uvFrame;
+    }
+    
+    
+    public void setClient( GameObject clientGO )
+    {
+    	client = clientGO;
+		client.transform.parent = UI.instance.transform; // Just for orginization in the hierarchy
+		client.layer = UI.instance.layer; // Set the proper layer so we only render on the UI camera
+		//client.transform.position = new Vector3( frame.x, -frame.y, depth ); // Depth will affect z-index
+
+		// Cache the clientTransform
+		clientTransform = client.transform;
     }
 
 
@@ -68,7 +92,7 @@ public class UISprite : System.Object
 			if( _uvFrame != value )
 			{
 				_uvFrame = value;
-				manager.updateUV( this );
+				updateUVs();
 			}
 		}
 	}
@@ -89,7 +113,21 @@ public class UISprite : System.Object
                 manager.showSprite( this );
         }
     }
+	
+	
+	public void updateUVs()
+	{
+		var meshFilter = client.GetComponent<MeshFilter>();
+		var mesh = meshFilter.mesh;
+		var uvs = mesh.uv;
 
+		uvs[0] = this.uvFrame.lowerLeftUV + Vector2.up * this.uvFrame.uvDimensions.y;  // Upper-left
+		uvs[1] = this.uvFrame.lowerLeftUV;                              // Lower-left
+		uvs[2] = this.uvFrame.lowerLeftUV + Vector2.right * this.uvFrame.uvDimensions.x;// Lower-right
+		uvs[3] = this.uvFrame.lowerLeftUV + this.uvFrame.uvDimensions;     // Upper-right
+
+		mesh.uv = uvs;
+	}
 
 	// This gets called by the manager just after the UV's get setup
 	public void initializeSize()
@@ -123,6 +161,45 @@ public class UISprite : System.Object
 	        v4 = new Vector3( width, 0, 0 );    // Upper-right
 		}
 		
+		var meshFilter = client.GetComponent<MeshFilter>();
+		var mesh = meshFilter.mesh;
+		var verts = mesh.vertices;
+		var uvs = mesh.uv;
+		
+		verts[0] = v1;
+		verts[1] = v2;
+		verts[2] = v3;
+		verts[3] = v4;
+		
+		uvs[0] = this.uvFrame.lowerLeftUV + Vector2.up * this.uvFrame.uvDimensions.y;  // Upper-left
+		uvs[1] = this.uvFrame.lowerLeftUV;                              // Lower-left
+		uvs[2] = this.uvFrame.lowerLeftUV + Vector2.right * this.uvFrame.uvDimensions.x;// Lower-right
+		uvs[3] = this.uvFrame.lowerLeftUV + this.uvFrame.uvDimensions;     // Upper-right
+		
+		//verts[0] = clientTransform.TransformPoint( v1 );
+		//verts[1] = clientTransform.TransformPoint( v2 );
+		//verts[2] = clientTransform.TransformPoint( v3 );
+		//verts[3] = clientTransform.TransformPoint( v4 );
+		
+		/*
+		Debug.Log( "--------------------" );
+		Debug.Log(v1);
+		Debug.Log(v2);
+		Debug.Log(v3);
+		Debug.Log(v4);
+		
+		foreach( var v in mesh.vertices )
+			Debug.Log( v );
+		*/
+		
+		mesh.vertices = verts;
+		mesh.uv = uvs;
+		
+		//mesh.RecalculateNormals();
+		
+		//meshFilter.sharedMesh = mesh;
+		mesh.RecalculateBounds();
+		
         updateTransform();
     }
 	
@@ -138,11 +215,8 @@ public class UISprite : System.Object
     // Applies the transform of the client GameObject and stores the results in the associated vertices of the overall mesh
     public virtual void updateTransform()
     {
-		meshVerts[vertexIndices.mv.one] = clientTransform.TransformPoint( v1 );
-		meshVerts[vertexIndices.mv.two] = clientTransform.TransformPoint( v2 );
-		meshVerts[vertexIndices.mv.three] = clientTransform.TransformPoint( v3 );
-		meshVerts[vertexIndices.mv.four] = clientTransform.TransformPoint( v4 );
 
+		
         manager.updatePositions();
     }
 	
@@ -172,7 +246,19 @@ public class UISprite : System.Object
 		set
 		{
 			_color = value;
-			manager.updateColors( this );
+			
+			var meshFilter = client.GetComponent<MeshFilter>();
+			var mesh = meshFilter.mesh;
+			var colors = mesh.colors;
+			
+			// initialize the colors array if we dont have one
+			if( colors.Length != 4 )
+				colors = new Color[4];
+			
+			for( var i = 0; i < colors.Length; i++ )
+				colors[i] = _color;
+			
+			mesh.colors = colors;
 		}
 	}
 	

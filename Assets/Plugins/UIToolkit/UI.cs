@@ -100,13 +100,6 @@ public class UI : UISpriteManager
 				lookAtTouch( UIFakeTouch.fromInput( ref lastMousePosition ) );
 		}
 #endif
-
-		// take care of updating our UVs, colors or bounds if necessary
-		if( meshIsDirty )
-		{
-			meshIsDirty = false;
-			updateMeshProperties();
-		}
 	}
 
 	

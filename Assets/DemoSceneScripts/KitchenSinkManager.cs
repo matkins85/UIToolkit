@@ -77,14 +77,16 @@ public class KitchenSinkManager : MonoBehaviour
 		toggleButton.onToggle += onToggleButtonChanged;
 		toggleButton.selected = true;
 		
-
+		
+		/*
 		// Progress/Health bar (be sure the bar is on a lower level than the GUIProgressBar
 		x = UIRelative.xPercentFrom( UIxAnchor.Left, .02f );
 		y = UIRelative.yPercentFrom( UIyAnchor.Top, .9f );
 		var progressBar = UIProgressBar.create( "progressBar.png", "progressBarBorder.png", 5, 3, x, y );
 		progressBar.resizeTextureOnChange = true;
 		progressBar.value = 0.4f;
-		
+		*/
+
 		
 		// animated sprite
 		x = UIRelative.xPercentFrom( UIxAnchor.Right, .3f );
@@ -97,7 +99,7 @@ public class KitchenSinkManager : MonoBehaviour
 		
 		// Test movement
 		StartCoroutine( marqueePlayButton( playButton ) );
-		StartCoroutine( animateProgressBar( progressBar ) );
+		//StartCoroutine( animateProgressBar( progressBar ) );
 		StartCoroutine( pulseOptionButton( optionsButton ) );
 
 		
