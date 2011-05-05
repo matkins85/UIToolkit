@@ -107,6 +107,78 @@ public class UISpriteManager : MonoBehaviour
 		if( !System.IO.File.Exists( jsonConfigFile ) )
 			throw new Exception( "texture packer config file doesnt exist: " + jsonConfigFile );
 #elif UNITY_ANDROID
+
+		/* this wont work because we can't get a byte[] to pass on to the input stream */
+		AndroidJNIHelper.debug = true;
+		
+		// getting the cache dir
+		AndroidJavaObject jc = new AndroidJavaClass( "com.unity3d.player.UnityPlayer" );
+		AndroidJavaObject jo = jc.GetStatic<AndroidJavaObject>( "currentActivity" );
+		
+		// getting a streaming asset
+		AndroidJavaObject assetManager = jo.Call<AndroidJavaObject>( "getAssets" );
+		AndroidJavaObject inputStream = assetManager.Call<AndroidJavaObject>( "open", "test.json" );
+		int streamSize = inputStream.Call<int>( "available" );
+		Debug.Log( ">>>>>>>>>>>>>>>>>> log streamSize: " + streamSize );
+		
+		
+		/*
+		var javaBytes = AndroidJNI.NewByteArray( streamSize );
+
+		int numRead = inputStream.Call<int>( "read", javaBytes );
+		var monoBytes = AndroidJNI.FromByteArray( javaBytes );
+		
+		Debug.Log( ">>>>>>>>>>>>>>>>>> total read: " + numRead );
+		Debug.Log( ">>>>>>>>>>>>>>>>>> first byte: " + monoBytes[0] );
+		Debug.Log( ">>>>>>>>>>>>>>>>>> first byte: " + monoBytes[1] );
+		Debug.Log( ">>>>>>>>>>>>>>>>>> first byte: " + monoBytes[2] );
+		Debug.Log( ">>>>>>>>>>>>>>>>>> final fileContents: " + System.Text.ASCIIEncoding.ASCII.GetString( monoBytes ) );
+		Debug.Log( ">>>>>>>>>>>>>>>>>> final fileContents: " + System.Text.UTF8Encoding.UTF8.GetString( monoBytes ) );
+		*/
+		
+		
+		// Read in the bytes
+		int i = 0;
+		int numRead = 0;
+		var sb = new System.Text.StringBuilder();
+		
+		do
+		{
+			numRead = inputStream.Call<int>( "read", javaBytes );
+
+			if( numRead >= 0 )
+				sb.Append( (char)numRead );
+		}
+		while( numRead >= 0 );
+		
+		inputStream.Call( "close" );
+		
+		Debug.Log( ">>>>>>>>>>>>>>>>>> read in file: " + sb.ToString() );
+		
+		
+		/*
+		do
+		{
+			Debug.Log( ">>>>>>>>>>>>>>>>>> bytesRead: " + numRead );
+			numRead = inputStream.Call<int>( "read", javaBytes );
+		}
+		while( numRead >= 0 );
+		Debug.Log( ">>>>>>>>>>>>>>>>>> bytesRead: " + numRead );
+						
+		//var bytesRead = inputStream.Call<int>( "read", javaBytes );
+		//Debug.Log( ">>>>>>>>>>>>>>>>>> bytesRead: " + bytesRead );
+		
+
+		//var monoBytes = AndroidJNI.FromByteArray( javaBytes );
+		Debug.Log( ">>>>>>>>>>>>>>>>>> Mono bytes length: " + monoBytes.Length );
+		Debug.Log( ">>>>>>>>>>>>>>>>>> Mono bytes: " + monoBytes[0] );
+		
+		var fileContents = System.Text.UTF8Encoding.UTF8.GetString( monoBytes );
+		Debug.Log( ">>>>>>>>>>>>>>>>>> final fileContents: " + fileContents );
+		Debug.Log( ">>>>>>>>>>>>>>>>>> final fileContents: " + System.Text.ASCIIEncoding.ASCII.GetString( monoBytes ) );
+		*/
+		
+		
 		// Doesnt work!!!
 		jsonConfigFile = "jar:file://" + Application.dataPath + "!/assets/" + filename;
 #else
