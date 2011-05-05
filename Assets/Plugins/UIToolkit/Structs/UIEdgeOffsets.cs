@@ -22,6 +22,15 @@ public struct UIEdgeOffsets
 		this.bottom = bottom;
 		this.right = right;
 	}
+	
+	
+	public void doubleOffset()
+	{
+		top *= 2;
+		left *= 2;
+		bottom *= 2;
+		right *= 2;
+	}
 
 
 	// Used to expand or contract a rect by this

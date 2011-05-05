@@ -27,7 +27,7 @@ public class KitchenSinkManager : MonoBehaviour
 		y = UIRelative.yPercentFrom( UIyAnchor.Top, .24f );
 		var scores = UIContinuousButton.create( "scoresUp.png", "scoresDown.png", x, y );
 		scores.centerize(); // centerize the button so we can scale it from the center
-		scores.highlightedTouchOffsets = new UIEdgeOffsets( 30 );
+		scores.highlightedTouchOffsets = new UIEdgeOffsets( 20 );
 		scores.onTouchUpInside += onTouchUpInsideScoresButton;
 		scores.onTouchIsDown += ( sender ) => Debug.Log( "touch is down: " + Time.time );
 		scores.touchDownSound = scoresSound;

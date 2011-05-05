@@ -10,10 +10,12 @@ public abstract class UITouchableSprite : UISprite, IComparable
 	protected UIEdgeOffsets _highlightedTouchOffsets;
 	protected Rect _highlightedTouchFrame;
 	protected Rect _normalTouchFrame;
-	
 	protected bool touchFrameIsDirty = true; // Indicates if the touchFrames need to be recalculated
-	
 	protected bool _highlighted;
+	
+	// this stores the transforms position the last time the touchFrame was calculated
+	// we only recalculate if the touchFrameIsDirty or if the GO moved
+	private Vector3 _lastTransformPosition;
 	
 	
 	public UITouchableSprite( Rect frame, int depth, UIUVRect uvFrame ):base( frame, depth, uvFrame )
@@ -59,13 +61,14 @@ public abstract class UITouchableSprite : UISprite, IComparable
 		get
 		{
 			// If the frame is dirty, recalculate it
-			if( touchFrameIsDirty )
+			if( touchFrameIsDirty || clientTransform.position != _lastTransformPosition )
 			{
 				touchFrameIsDirty = false;
-				
+			
+				Debug.Log( "calculated touchFrame" );	
 				// grab the normal frame of the sprite then add the offsets to get our touch frames
 				// remembering to offset if we have our origin in the center
-				Rect normalFrame = new Rect( clientTransform.position.x, -clientTransform.position.y, width, height );
+				Rect normalFrame = new Rect( clientTransform.position.x, -clientTransform.position.y, width * clientTransform.localScale.x, height * clientTransform.localScale.y );
 				
 				if( gameObjectOriginInCenter )
 				{
@@ -75,6 +78,9 @@ public abstract class UITouchableSprite : UISprite, IComparable
 
 				_normalTouchFrame = _normalTouchOffsets.addToRect( normalFrame );
 				_highlightedTouchFrame = _highlightedTouchOffsets.addToRect( normalFrame );
+				
+				// cache the position
+				_lastTransformPosition = clientTransform.position;
 			}
 			
 			// Either return our highlighted or normal touch frame
