@@ -102,10 +102,13 @@ public class UISpriteManager : MonoBehaviour
 	
 #if UNITY_EDITOR
 		jsonConfigFile = jsonConfigFile.Substring( 0, jsonConfigFile.Length ) + "/StreamingAssets/" + filename;
-		
+
 		// sanity check while in the editor
 		if( !System.IO.File.Exists( jsonConfigFile ) )
 			throw new Exception( "texture packer config file doesnt exist: " + jsonConfigFile );
+#elif UNITY_ANDROID
+		// Doesnt work!!!
+		jsonConfigFile = "jar:file://" + Application.dataPath + "!/assets/" + filename;
 #else
 		jsonConfigFile = jsonConfigFile + "/Raw/" + filename;
 #endif

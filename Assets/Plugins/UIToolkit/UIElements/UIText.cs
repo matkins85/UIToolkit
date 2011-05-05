@@ -111,10 +111,13 @@ public class UIText : System.Object
 		string localizedStringsFile = Application.dataPath;
 		
 #if UNITY_EDITOR
-		localizedStringsFile = localizedStringsFile.Substring( 0, localizedStringsFile.Length ) + "/StreamingAssets/" + filename; 
+		localizedStringsFile = localizedStringsFile.Substring( 0, localizedStringsFile.Length ) + "/StreamingAssets/" + filename;
+#elif UNITY_ANDROID
+		localizedStringsFile = "jar:file://" + Application.dataPath + "!/assets/" + filename;
 #else
 		localizedStringsFile = localizedStringsFile + "/Raw/" + filename;
 #endif
+
 		// create reader & open file
 		StreamReader sr = new StreamReader( new FileStream( localizedStringsFile, FileMode.Open, FileAccess.Read ) );
 		string input = null;
