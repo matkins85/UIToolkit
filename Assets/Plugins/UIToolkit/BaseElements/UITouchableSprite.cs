@@ -64,8 +64,7 @@ public abstract class UITouchableSprite : UISprite, IComparable
 			if( touchFrameIsDirty || clientTransform.position != _lastTransformPosition )
 			{
 				touchFrameIsDirty = false;
-			
-				Debug.Log( "calculated touchFrame" );	
+
 				// grab the normal frame of the sprite then add the offsets to get our touch frames
 				// remembering to offset if we have our origin in the center
 				Rect normalFrame = new Rect( clientTransform.position.x, -clientTransform.position.y, width * clientTransform.localScale.x, height * clientTransform.localScale.y );

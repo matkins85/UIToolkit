@@ -100,31 +100,24 @@ public class UIText : System.Object
 		this.textureOffset = new Vector2( rect.x, rect.y );
 	}
 
-	
-	// parse the .fnt file with the font definition.  Font files should be in the Assets/StreamingAssets folder
+
+	/// <summary>
+	/// Parse the fnt file with the font definition.  Font files should be in the Resources folder and have a .txt extension.
+	/// Do not inluclude the file extension in the filename!
+	/// </summary>
 	private void loadConfigfile( string filename )
 	{
 		// should we load a double resolution font?
 		if( UI.instance.isHD )
-			filename = filename.Substring( 0, filename.Length - 4 ) + "2x.fnt";
+			filename = filename + "2x";
 
-		string localizedStringsFile = Application.dataPath;
-		
-#if UNITY_EDITOR
-		localizedStringsFile = localizedStringsFile.Substring( 0, localizedStringsFile.Length ) + "/StreamingAssets/" + filename;
-#elif UNITY_ANDROID
-		localizedStringsFile = "jar:file://" + Application.dataPath + "!/assets/" + filename;
-#else
-		localizedStringsFile = localizedStringsFile + "/Raw/" + filename;
-#endif
-
-		// create reader & open file
-		StreamReader sr = new StreamReader( new FileStream( localizedStringsFile, FileMode.Open, FileAccess.Read ) );
-		string input = null;
+		var asset = Resources.Load( filename, typeof( TextAsset ) ) as TextAsset;
+		if( asset == null )
+			Debug.LogError( "Could not find font config file in Resources folder: " + filename );
 	
 		int idNum = 0;
 		
-		while( ( input = sr.ReadLine() ) != null )
+		foreach( var input in asset.text.Split( new string[] { "\r\n" }, System.StringSplitOptions.RemoveEmptyEntries ) )
 		{
 			//first split line into "space" chars
        		string[] words = input.Split(' ');
@@ -186,6 +179,10 @@ public class UIText : System.Object
 				} // end foreach
 			} // end foreach
 		} // end while
+		
+		// unload the asset
+		asset = null;
+		Resources.UnloadUnusedAssets();	
 	}
 	
 	
