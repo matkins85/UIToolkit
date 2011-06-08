@@ -24,6 +24,8 @@ public class UI : MonoBehaviour
 	public bool autoTextureSelectionForHD = false;
 	public bool allowPod4GenHD = true; // if false, iPod touch 4G will not take part in HD mode
 	public int maxWidthOrHeightForSD = 960; // if the width/height of the screen equals or exceeds this size HD mode will be triggered
+	public bool letterBoxToFixedAspectRatio = false; // if true then the ui's camera view port is sized to have the aspect ratio of fixedAspectRatio regardless of the device's aspect ratio
+	public float fixedAspectRatio = 1.5f; // 1.5 is the decimal aspect ratio of the iPhone
 	[HideInInspector]
 	public bool isHD = false;
 	
@@ -51,10 +53,34 @@ public class UI : MonoBehaviour
 		_uiCamera.nearClipPlane = 0.3f;
 		_uiCamera.farClipPlane = 50.0f;
 		_uiCamera.depth = drawDepth;
-		_uiCamera.rect = new Rect( 0.0f, 0.0f, 1.0f, 1.0f );
 		_uiCamera.orthographic = true;
 		_uiCamera.orthographicSize = Screen.height / 2;
-
+		
+		// set _uiCamera's view port size
+		if( letterBoxToFixedAspectRatio )
+		{
+			float smallDimension = Mathf.Min( Screen.width, Screen.height );
+			float largeDimension = Mathf.Max( Screen.width, Screen.height );
+			float deviceAspectRatio = largeDimension / smallDimension;
+			
+			if( deviceAspectRatio > fixedAspectRatio ) // if the device ratio is larger than the intended ratio then we must letterbox on the large dimension
+			{
+				float newLargeDimension = smallDimension * fixedAspectRatio;
+				float newNormalizedViewPortHeight = newLargeDimension / largeDimension;
+				_uiCamera.rect = new Rect( 0f, (1-newNormalizedViewPortHeight)/2, 1f, newNormalizedViewPortHeight );
+			}
+			else if( deviceAspectRatio < fixedAspectRatio ) // if the device ratio is smaller than the intended ratio then we must letterbox on the small dimension
+			{
+				float newSmallDimension = smallDimension * fixedAspectRatio;
+				float newNormalizedViewPortWidth = newSmallDimension / smallDimension;
+				_uiCamera.rect = new Rect( (1-newNormalizedViewPortWidth)/2, 0f, newNormalizedViewPortWidth, 1f );
+			}
+		}
+		else
+		{
+			_uiCamera.rect = new Rect( 0.0f, 0.0f, 1.0f, 1.0f );
+		}
+		
 		// Set the camera position based on the screenResolution/orientation
 		_uiCamera.transform.position = new Vector3( Screen.width / 2, -Screen.height / 2, -10.0f );
 		_uiCamera.cullingMask = UILayer;
